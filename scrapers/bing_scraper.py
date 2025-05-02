@@ -72,7 +72,8 @@ class BingScraper(BaseScraper):
 
 
 if __name__ == "__main__":
-    proxy = "http://127.0.0.1:8080"
+    # proxy = "http://127.0.0.1:8080"
+    proxy = None
     headers = {}
     # cookies = {
     #     'MUID': '2674D0E49B3A67DE0576C55B9ACC6687',

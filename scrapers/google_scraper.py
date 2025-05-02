@@ -68,7 +68,8 @@ class GoogleScraper(BaseScraper):
 
 
 if __name__ == "__main__":
-    proxy = "http://127.0.0.1:8080"
+    # proxy = "http://127.0.0.1:8080"
+    proxy = None
     headers = {}
     cookies = {
         'AEC': 'AVcja2fqLn3YYsgaOJRHPXG2ksCBOtQ4I4Vgm6tAJlUZWJ-xwjHX7mVwVeo',

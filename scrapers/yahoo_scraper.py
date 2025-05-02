@@ -81,7 +81,8 @@ class YahooScraper(BaseScraper):
 
 
 if __name__ == "__main__":
-    proxy = "http://127.0.0.1:8080"
+    # proxy = "http://127.0.0.1:8080"
+    proxy = None
     headers = {}
     cookies = {}
     yahoo_scraper = YahooScraper(headers, cookies, proxy)
