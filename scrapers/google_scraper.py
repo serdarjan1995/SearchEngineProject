@@ -1,81 +1,80 @@
-# pip install bs4 curl_cffi html5lib
-
 from bs4 import BeautifulSoup
 from curl_cffi import requests
 
-search_query = "childhood cancer"
+from scrapers.base_scraper import BaseScraper
 
-URL = f"https://www.google.com/search?q={search_query}"
 
-proxy = ""  # "http://127.0.0.1:8080"
-proxies = {"http": proxy, "https": proxy} if proxy else None
+class GoogleScraper(BaseScraper):
+    BASE_URL = "https://www.google.com"
+    SEARCH_URL = BASE_URL + "/search"
+    PROXIES = None
+    HEADERS = {}
+    COOKIES = {}
 
-headers = {
-    'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
-    'accept-language': 'en-US,en;q=0.9',
-    'dnt': '1',
-    'downlink': '10',
-    'priority': 'u=0, i',
-    'rtt': '50',
-    'sec-ch-prefers-color-scheme': 'dark',
-    'sec-ch-ua': '"Chromium";v="131", "Not:A-Brand";v="24", "Google Chrome";v="131"',
-    'sec-ch-ua-arch': '"x86"',
-    'sec-ch-ua-bitness': '"64"',
-    'sec-ch-ua-form-factors': '"Desktop"',
-    'sec-ch-ua-full-version': '"131.0.6998.88"',
-    'sec-ch-ua-full-version-list': '"Chromium";v="131.0.6998.88", "Not:A-Brand";v="24.0.0.0", "Google Chrome";v="131.0.6998.88"',
-    'sec-ch-ua-mobile': '?0',
-    'sec-ch-ua-model': '""',
-    'sec-ch-ua-platform': '"Linux"',
-    'sec-ch-ua-platform-version': '"6.1.0"',
-    'sec-ch-ua-wow64': '?0',
-    'sec-fetch-dest': 'document',
-    'sec-fetch-mode': 'navigate',
-    'sec-fetch-site': 'none',
-    'sec-fetch-user': '?1',
-    'upgrade-insecure-requests': '1',
-    # 'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36',
-    'x-browser-channel': 'stable',
-    'x-browser-copyright': 'Copyright 2025 Google LLC. All rights reserved.',
-    'x-browser-validation': 'Xu3McleZcKTT6TgGB8KFHwGJApU=',
-    'x-browser-year': '2025',
-}
+    def get_cookies(self):
+        """ we can get cookies just visiting google.com """
+        response = requests.get(self.BASE_URL, impersonate="chrome131", verify=False, proxies=self.PROXIES,
+                                headers=self.HEADERS)
+        self.COOKIES = response.cookies.get_dict()
 
-cookies = {
-    'AEC': 'AVcja2fqLn3YYsgaOJRHPXG2ksCBOtQ4I4Vgm6tAJlUZWJ-xwjHX7mVwVeo',
-    'NID': '522=mecL14YgWSjL5s1GVOIosnNmxPcaLKeSItPCsk_dAmMmDKnC5yitVjPm_cY1DdWbyYKYraDeF14ONfTHd89pAITY2iGMWhM5UriAZh4ifMH5DClyKltqFP7UuGR_Wj5yDdEPuF-2R8irSj1RHQBShf_-LjxBHeBBKzYSGKwu5Gwg07zRBOMdd2omIUPQzj5PBeLy--YuveNFms3cnrTve6B3ndXRXO9PWITTaLB4TZf6nqJp5TLwZ1j8T7ca9wqUeakZM7y3vLL8QwyBwwc',
-}
+    def get_search_results(self, search_query: str, max_pages: int = 10):
+        """ get search results """
 
-start = 0
-links = []
-for page in range(1, 11):
-    start = (page - 1) * 10
-    params = {}
-    if start:
-        params['start'] = start
-    r = requests.get(
-        URL, impersonate="chrome131", verify=False, proxies=proxies, headers=headers, cookies=cookies, params=params
-    )
+        all_links = []
+        for page in range(1, max_pages + 1):
+            start = (page - 1) * 10
+            params = {
+                "q": search_query,
+            }
+            if start:
+                params['start'] = str(start)
 
-    if r.status_code != 200:
-        print(f"Page {page} failed status code: {r.status_code}")
+            response = requests.get(
+                self.SEARCH_URL, impersonate="chrome131", verify=False, proxies=self.PROXIES, headers=self.HEADERS,
+                cookies=self.COOKIES, params=params
+            )
 
-    soup = BeautifulSoup(r.content, 'html5lib')
-    # print(soup.prettify())
+            if response.status_code != 200:
+                self.logger.error(f"Page {page} failed status code: {response.status_code}")
+                continue
 
-    main_div = soup.find('div', attrs={'role': 'main'})
+            links = self.extract_links_from_response(response)
+            self.logger.info(f"Page {page} Extracted {len(links)} links")
+            all_links.extend(links)
 
-    for a_tag in main_div.find_all('a'):
-        if not a_tag.h3:
-            continue
-        a_url = a_tag['href']
-        link = {
-            "url": a_url,
-            "title": a_tag.h3.text,
-        }
-        links.append(link)
+        self.logger.info(f"Total links {len(all_links)}")
+        return all_links
 
-    print(f"Page {page} scraped")
+    @staticmethod
+    def extract_links_from_response(response: requests.Response):
+        """ extracts links from response """
+        soup = BeautifulSoup(response.content, 'html5lib')
+        main_div = soup.find('div', attrs={'role': 'main'})
+        if not main_div:
+            raise Exception("main div not found")
 
-print(f"done. extracted links: {len(links)}")
-print(links)
+        links = []
+        for a_tag in main_div.find_all('a'):
+            if not a_tag.h3:
+                continue
+            a_url = a_tag['href']
+            link = {
+                "url": a_url,
+                "title": a_tag.h3.text,
+            }
+            links.append(link)
+
+        return links
+
+
+if __name__ == "__main__":
+    proxy = "http://127.0.0.1:8080"
+    headers = {}
+    cookies = {
+        'AEC': 'AVcja2fqLn3YYsgaOJRHPXG2ksCBOtQ4I4Vgm6tAJlUZWJ-xwjHX7mVwVeo',
+        'NID': '522=mecL14YgWSjL5s1GVOIosnNmxPcaLKeSItPCsk_dAmMmDKnC5yitVjPm_cY1DdWbyYKYraDeF14ONfTHd89pAITY2iGMWhM5UriAZh4ifMH5DClyKltqFP7UuGR_Wj5yDdEPuF-2R8irSj1RHQBShf_-LjxBHeBBKzYSGKwu5Gwg07zRBOMdd2omIUPQzj5PBeLy--YuveNFms3cnrTve6B3ndXRXO9PWITTaLB4TZf6nqJp5TLwZ1j8T7ca9wqUeakZM7y3vLL8QwyBwwc',
+    }
+    google_scraper = GoogleScraper(headers, cookies, proxy)
+
+    query = "childhood cancer"
+    google_scraper.get_search_results(query)
