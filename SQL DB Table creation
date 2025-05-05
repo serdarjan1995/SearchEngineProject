@@ -1,0 +1,41 @@
+CREATE TABLE IF NOT EXISTS urls (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    search_term VARCHAR(2083),
+    url TEXT,
+    title TEXT,
+    search_engine VARCHAR(100),
+    is_ad boolean,
+    is_duplicate boolean
+);
+
+CREATE TABLE IF NOT EXISTS unique_urls_with_flags (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        search_term VARCHAR(2083),
+        url TEXT,
+        in_google boolean,
+        in_bing boolean,
+        in_yahoo boolean,
+        in_duckduckgo boolean
+    );
+    
+    CREATE TABLE IF NOT EXISTS url_stats (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    search_terms VARCHAR(255),
+    unique_urls INT,
+    duplicate_urls INT,
+    ad_urls INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE IF NOT EXISTS scraped_pages (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    url VARCHAR(2083),
+    status VARCHAR(50)
+);
+
+-- Content table: content extracted from a URL
+CREATE TABLE IF NOT EXISTS scraped_content (
+    result_id INT,
+    info_type VARCHAR(50),
+    content_details LONGTEXT,
+    FOREIGN KEY (result_id) REFERENCES scraped_pages(id)
+);
