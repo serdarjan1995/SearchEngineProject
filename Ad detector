@@ -1,3 +1,5 @@
+##This file has code to detect ads and duplicates. Then it is applied to a dataframe called df_merged
+
 %pip install adblockparser
 
 from adblockparser import AdblockRules
@@ -33,5 +35,10 @@ def is_ad_heuristic(url):
 def is_ad_url(url):
     return rules.should_block(url) or is_ad_heuristic(url)
 
-#### This should be applied to a dataframe to work
+
 df_merged['is_ad'] = df_merged['url'].apply(is_ad_url)
+
+###Finding duplicates
+
+df_merged['is_duplicate'] = df_merged.duplicated(subset='url', keep=False)
+df_merged.head()
