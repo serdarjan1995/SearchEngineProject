@@ -1,0 +1,19 @@
+##This file has code to connect and disconnect to a database. This requires the user to have configured a MySQL database first.
+##host should be local, and fields 'user','password','database' depend on the user.
+
+#CONNECT TO DB
+import mysql.connector
+
+# Connect to MySQL
+conn = mysql.connector.connect(
+    host='localhost',
+    user='root',
+    password='',
+    database='test'
+)
+cursor = conn.cursor()
+
+
+#Disconnect DB
+
+conn.close()
