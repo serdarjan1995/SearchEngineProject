@@ -1,0 +1,19 @@
+import pandas as pd
+
+google = pd.DataFrame(google)
+google['search_engine'] = 'Google'
+
+
+yahoo=pd.DataFrame(yahoo)
+yahoo['search_engine'] = 'Yahoo'
+
+duck_duck_go=pd.DataFrame(duck_duck_go)
+duck_duck_go['search_engine'] = 'Duck_duck_go'
+
+bing=pd.DataFrame(bing)
+bing['search_engine'] = 'Bing'
+
+df_merged = pd.concat([google, yahoo, duck_duck_go, bing], ignore_index=True)
+df_merged['search_term']=query
+
+df_merged
