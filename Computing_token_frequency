@@ -1,0 +1,29 @@
+import pandas as pd
+
+def compute_token_frequencies_per_url(results_df: pd.DataFrame, query: str) -> pd.DataFrame:
+    """
+    For each URL, compute the frequency of each query token in its associated text.
+    
+    Parameters:
+        results_df (pd.DataFrame): A DataFrame with 'url' and 'text' columns.
+        query (str): The search query (e.g., "childhood cancer").
+
+    Returns:
+        pd.DataFrame: A long-form DataFrame with columns: ['url', 'token', 'frequency']
+    """
+    keywords = query.lower().split()
+    results_df['text'] = results_df['text'].astype(str).fillna('')
+    results_df['text_lower'] = results_df['text'].str.lower()
+
+    rows = []
+    for _, row in results_df.iterrows():
+        for kw in keywords:
+            freq = row['text_lower'].count(kw)
+            rows.append({'url': row['url'], 'token': kw, 'frequency': freq})
+    
+    return pd.DataFrame(rows)
+
+if __name__ == "__main__":
+    query = "childhood cancer"
+    token_freq_df = compute_token_frequencies_per_url(results_df, query)
+    print(token_freq_df.head())
