@@ -1,0 +1,44 @@
+import pandas as pd
+
+def compute_search_engine_stats(df_merged: pd.DataFrame, query: str) -> pd.DataFrame:
+    """
+    Computes per-search-engine and global statistics from the merged search results.
+
+    Parameters:
+        df_merged (pd.DataFrame): The input DataFrame containing columns like 'url', 'search_engine', 'is_ad', 'is_promo'.
+        query (str): The search query associated with the results.
+
+    Returns:
+        pd.DataFrame: Summary statistics by search engine plus a global row.
+    """
+
+    # Per search engine stats
+    per_engine_stats = df_merged.groupby('search_engine').agg(
+        unique_urls=('url', 'nunique'),
+        total_urls=('url', 'count'),
+        ad_urls=('is_ad', lambda x: df_merged.loc[x.index][x]['url'].nunique()),
+        promo_urls=('is_promo', lambda x: df_merged.loc[x.index][x]['url'].nunique()),
+        duplicate_urls=('url', lambda x: x.duplicated().sum())
+    ).reset_index()
+
+    # Global stats
+    global_row = pd.DataFrame([{
+        'search_engine': 'Global',
+        'unique_urls': int(df_merged['url'].nunique()),
+        'total_urls': int(len(df_merged)),
+        'ad_urls': int(df_merged[df_merged['is_ad'] == True]['url'].nunique()),
+        'promo_urls': int(df_merged[df_merged['is_promo'] == True]['url'].nunique()),
+        'duplicate_urls': int(df_merged.duplicated(subset=['url']).sum())
+    }])
+
+    # Combine and add query
+    stats_with_global = pd.concat([per_engine_stats, global_row], ignore_index=True)
+    stats_with_global['search_term'] = query
+
+    return stats_with_global
+
+if __name__ == "__main__":
+    stats_df = compute_search_engine_stats(df_merged, query)
+    print(stats_df)
+
+
