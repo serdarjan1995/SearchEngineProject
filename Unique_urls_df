@@ -1,0 +1,33 @@
+###Propably this does not have to be used. It create table with unique urls but we will do it with sql.
+
+import pandas as pd
+def create_unique_url_matrix(df_merged: pd.DataFrame, query: str) -> pd.DataFrame:
+    """
+    Filters out ads and promos, creates a presence matrix of URLs per search engine,
+    and attaches the query term.
+    """
+    df_wo_ads = df_merged[(df_merged['is_ad'] == False) & (df_merged['is_promo'] == False)].copy()
+    df_wo_ads['present'] = 1
+
+    pivot_df = df_wo_ads.pivot_table(
+        index='url',
+        columns='search_engine',
+        values='present',
+        fill_value=0,
+        aggfunc='max'
+    ).reset_index()
+
+    pivot_df['search_term'] = query
+    pivot_df.columns.name = None
+    pivot_df = pivot_df.rename(columns={
+        'Google': 'in_google',
+        'Bing': 'in_bing',
+        'Yahoo': 'in_yahoo',
+        'Duck_duck_go': 'in_duckduckgo'
+    })
+
+    return pivot_df
+
+if __name__ == "__main__":
+    pivot_df = create_unique_url_matrix(df_merged, query)
+    print(pivot_df.head())
