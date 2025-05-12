@@ -14,12 +14,13 @@ class BaseScraper(ABC):
 
     def __init__(self, headers: Union[None, dict], cookies: Union[None, dict], proxy: Union[str, None] = None):
         self.headers = headers
-        self.logger = logging.getLogger(__name__)
+        self.logger = logging.getLogger(self.__class__.__name__)
         self.logger.setLevel(logging.INFO)
-        ch = logging.StreamHandler()
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s @ %(filename)s:%(funcName)s:%(lineno)d')
-        ch.setFormatter(formatter)
-        self.logger.addHandler(ch)
+        if not self.logger.handlers:
+            ch = logging.StreamHandler()
+            formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s @ %(filename)s:%(funcName)s:%(lineno)d')
+            ch.setFormatter(formatter)
+            self.logger.addHandler(ch)
 
         if proxy:
             self.PROXIES = {"http": proxy, "https": proxy}

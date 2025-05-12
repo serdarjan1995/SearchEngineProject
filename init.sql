@@ -1,0 +1,4 @@
+CREATE DATABASE IF NOT EXISTS search_engine;
+CREATE USER IF NOT EXISTS 'mysql'@'%' IDENTIFIED BY 'mypassword';
+GRANT ALL PRIVILEGES ON search_engine.* TO 'mysql'@'%';
+FLUSH PRIVILEGES;

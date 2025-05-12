@@ -9,8 +9,10 @@
 .history/
 
 __pycache__/
+config/
 
 # Built Visual Studio Code Extensions
 *.vsix
 
 .idea/
+.env

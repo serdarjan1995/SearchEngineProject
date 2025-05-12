@@ -1,0 +1,61 @@
+version: '3.9'
+
+services:
+  db:
+    image: mysql:8
+    restart: always
+    env_file: .env
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+#  mysql-workbench:
+#    image: linuxserver/mysql-workbench
+#    environment:
+#      - PUID=1000
+#      - PGID=1000
+#      - TZ=Etc/UTC
+#    ports:
+#      - "3001:3000"
+#    volumes:
+#      - ./config/mysql-workbench:/config
+#    restart: unless-stopped
+
+#  backend:
+#    build:
+#      context: .
+#      dockerfile: backend.Dockerfile
+#    depends_on:
+#      - db
+#    env_file: .env
+#    environment:
+#      DATABASE_URL: mysql+pymysql://${MYSQL_USER}:${MYSQL_PASSWORD}@db:3306/${MYSQL_DATABASE}
+#    ports:
+#      - "8000:8000"
+#    volumes:
+#      - ./backend:/app
+#    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+#
+#  frontend:
+#    build:
+#      context: .
+#      dockerfile: frontend.Dockerfile
+#    ports:
+#      - "3000:3000"
+#    volumes:
+#      - ./frontend:/app
+#      - /app/node_modules
+#    stdin_open: true
+#    tty: true
+#    depends_on:
+#      - backend
+
+volumes:
+  mysql-data:

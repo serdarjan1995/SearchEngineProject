@@ -1,7 +1,7 @@
 from bs4 import BeautifulSoup
 from curl_cffi import requests
 
-from scrapers.base_scraper import BaseScraper
+from .base_scraper import BaseScraper
 
 
 class GoogleScraper(BaseScraper):
@@ -40,6 +40,8 @@ class GoogleScraper(BaseScraper):
 
             links = self.extract_links_from_response(response)
             self.logger.info(f"Page {page} Extracted {len(links)} links")
+            if not links:
+                break
             all_links.extend(links)
 
         self.logger.info(f"Total links {len(all_links)}")
@@ -67,15 +69,15 @@ class GoogleScraper(BaseScraper):
         return links
 
 
-if __name__ == "__main__":
-    # proxy = "http://127.0.0.1:8080"
-    proxy = None
-    headers = {}
-    cookies = {
-        'AEC': 'AVcja2fqLn3YYsgaOJRHPXG2ksCBOtQ4I4Vgm6tAJlUZWJ-xwjHX7mVwVeo',
-        'NID': '522=mecL14YgWSjL5s1GVOIosnNmxPcaLKeSItPCsk_dAmMmDKnC5yitVjPm_cY1DdWbyYKYraDeF14ONfTHd89pAITY2iGMWhM5UriAZh4ifMH5DClyKltqFP7UuGR_Wj5yDdEPuF-2R8irSj1RHQBShf_-LjxBHeBBKzYSGKwu5Gwg07zRBOMdd2omIUPQzj5PBeLy--YuveNFms3cnrTve6B3ndXRXO9PWITTaLB4TZf6nqJp5TLwZ1j8T7ca9wqUeakZM7y3vLL8QwyBwwc',
-    }
-    google_scraper = GoogleScraper(headers, cookies, proxy)
+# proxy = "http://127.0.0.1:8080"
+proxy = None
+headers = {}
+cookies = {
+    'AEC': 'AVcja2fqLn3YYsgaOJRHPXG2ksCBOtQ4I4Vgm6tAJlUZWJ-xwjHX7mVwVeo',
+    'NID': '522=mecL14YgWSjL5s1GVOIosnNmxPcaLKeSItPCsk_dAmMmDKnC5yitVjPm_cY1DdWbyYKYraDeF14ONfTHd89pAITY2iGMWhM5UriAZh4ifMH5DClyKltqFP7UuGR_Wj5yDdEPuF-2R8irSj1RHQBShf_-LjxBHeBBKzYSGKwu5Gwg07zRBOMdd2omIUPQzj5PBeLy--YuveNFms3cnrTve6B3ndXRXO9PWITTaLB4TZf6nqJp5TLwZ1j8T7ca9wqUeakZM7y3vLL8QwyBwwc',
+}
+google_scraper = GoogleScraper(headers, cookies, proxy)
 
+if __name__ == "__main__":
     query = "childhood cancer"
     google_scraper.get_search_results(query)

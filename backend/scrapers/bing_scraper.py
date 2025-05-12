@@ -1,7 +1,7 @@
 from bs4 import BeautifulSoup
 from curl_cffi import requests
 
-from scrapers.base_scraper import BaseScraper
+from .base_scraper import BaseScraper
 
 
 class BingScraper(BaseScraper):
@@ -38,6 +38,8 @@ class BingScraper(BaseScraper):
 
             links = self.extract_links_from_response(response)
             self.logger.info(f"Page {page} Extracted {len(links)} links")
+            if not links:
+                break
             all_links.extend(links)
 
         self.logger.info(f"Total links {len(all_links)}")
@@ -71,16 +73,16 @@ class BingScraper(BaseScraper):
         return links
 
 
-if __name__ == "__main__":
-    # proxy = "http://127.0.0.1:8080"
-    proxy = None
-    headers = {}
-    # cookies = {
-    #     'MUID': '2674D0E49B3A67DE0576C55B9ACC6687',
-    #     'MUIDB': '2674D0E49B3A67DE0576C55B9ACC6687',
-    # }
-    cookies = {}
-    bing_scraper = BingScraper(headers, cookies, proxy)
+# proxy = "http://127.0.0.1:8080"
+proxy = None
+headers = {}
+# cookies = {
+#     'MUID': '2674D0E49B3A67DE0576C55B9ACC6687',
+#     'MUIDB': '2674D0E49B3A67DE0576C55B9ACC6687',
+# }
+cookies = {}
+bing_scraper = BingScraper(headers, cookies, proxy)
 
+if __name__ == "__main__":
     query = "childhood cancer"
     bing_scraper.get_search_results(query)

@@ -2,7 +2,10 @@ import json
 import re
 # from curl_cffi import requests
 import requests
-from scrapers.base_scraper import BaseScraper
+from .base_scraper import BaseScraper
+import urllib3
+
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
 class DuckDuckGoScraper(BaseScraper):
@@ -69,6 +72,8 @@ class DuckDuckGoScraper(BaseScraper):
                     # impersonate="chrome131",
                 )
             self.logger.info(f"Page {page} Extracted {len(links)} links")
+            if not links:
+                break
             all_links.extend(links)
 
         self.logger.info(f"Total links {len(all_links)}")
@@ -114,22 +119,22 @@ class DuckDuckGoScraper(BaseScraper):
         return url
 
 
-if __name__ == "__main__":
-    proxy = None  #  or "http://127.0.0.1:8080"
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:137.0) Gecko/20100101 Firefox/137.0',
-        'Accept': '*/*',
-        'Accept-Language': 'en-US,en;q=0.5',
-        'Dnt': '1',
-        'Sec-Gpc': '1',
-        'Sec-Fetch-Dest': 'script',
-        'Sec-Fetch-Mode': 'no-cors',
-        'Sec-Fetch-Site': 'same-site',
-        'Priority': 'u=1',
-        'Referer': 'https://duckduckgo.com/',
-    }
-    cookies = {}
-    duckduckgo_scraper = DuckDuckGoScraper(headers, cookies, proxy)
+proxy = None  # or "http://127.0.0.1:8080"
+headers = {
+    'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:137.0) Gecko/20100101 Firefox/137.0',
+    'Accept': '*/*',
+    'Accept-Language': 'en-US,en;q=0.5',
+    'Dnt': '1',
+    'Sec-Gpc': '1',
+    'Sec-Fetch-Dest': 'script',
+    'Sec-Fetch-Mode': 'no-cors',
+    'Sec-Fetch-Site': 'same-site',
+    'Priority': 'u=1',
+    'Referer': 'https://duckduckgo.com/',
+}
+cookies = {}
+duckduckgo_scraper = DuckDuckGoScraper(headers, cookies, proxy)
 
+if __name__ == "__main__":
     query = "childhood cancer"
     duckduckgo_scraper.get_search_results(query, max_pages=10)
