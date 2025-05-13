@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, BigInteger, Boolean, DateTime, ForeignKey, Text
+from sqlalchemy import Column, String, Integer, BigInteger, Boolean, DateTime, ForeignKey, Text, UniqueConstraint
 from sqlalchemy.dialects.mysql import MEDIUMTEXT
 from sqlalchemy.orm import relationship, declarative_base
 
@@ -51,12 +51,15 @@ class QueryKeyword(Base):
 
     id = Column(BigInteger, primary_key=True)
     keyword = Column(String(255))
-    keyword_hash = Column(String(50), unique=True)
+    keyword_hash = Column(String(50))
     query_hash = Column(String(255), ForeignKey("search_queries.query_hash"))
     created_at = Column(DateTime, default=datetime_now)
 
     search_query = relationship("SearchQuery", back_populates="keywords")
-    keyword_freqs = relationship("KeywordFreq", back_populates="keywords")
+
+    __table_args__ = (
+        UniqueConstraint('keyword_hash', 'query_hash', name='uq_keyword_query_hash'),
+    )
 
     # query = relationship(
     #     "SearchQuery",
@@ -141,7 +144,7 @@ class KeywordFreq(Base):
     __tablename__ = "keyword_freq"
 
     id = Column(BigInteger, primary_key=True)
-    keyword_hash = Column(String(50), ForeignKey("query_keywords.keyword_hash"))
+    keyword_hash = Column(String(50))
     url_hash = Column(String(50))
     frequency = Column(Integer)
     updated_at = Column(DateTime, default=datetime_now)
@@ -156,3 +159,17 @@ class KeywordFreq(Base):
         "SeScrapeResult",
         primaryjoin="KeywordFreq.url_hash==foreign(SeScrapeResult.url_hash)"
     )
+
+
+class QueryRank(Base):
+    __tablename__ = "query_rank"
+
+    id = Column(BigInteger, primary_key=True)
+    query_hash = Column(String(50), ForeignKey("search_queries.query_hash"))
+    url_hash = Column(String(50))
+    rank = Column(Integer)
+    total_matches = Column(Integer)
+    updated_at = Column(DateTime, default=datetime_now)
+    created_at = Column(DateTime, default=datetime_now)
+
+    search_query = relationship("SearchQuery")

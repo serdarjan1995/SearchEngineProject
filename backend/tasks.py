@@ -3,12 +3,15 @@ from datetime import timedelta
 from sqlalchemy import func, distinct, case
 from sqlalchemy.orm import Session
 
-from backend.db import with_db
-from backend.scrapers import url_scrape_processor
-from backend.utils.ads_detector import is_ad_url, is_promo_heuristic
+from db import with_db
+from scrapers import url_scrape_processor
+from utils.ads_detector import is_ad_url, is_promo_heuristic
 from models import SearchQuery, QueryKeyword, SeScrapeTask, SeScrapeResult, UrlScrapeResult, KeywordFreq, \
-    SearchQueryStats
+    SearchQueryStats, QueryRank
 from utils.base_utils import logger, md5_hash, datetime_now, split_query_to_keywords, search_engines
+
+
+MAX_PAGE_SCRAPE = 10
 
 
 @with_db
@@ -91,7 +94,7 @@ def run_se_scrape_tasks(query: str, query_hash: str, refresh: bool, tasks: list[
     all_unique_urls = {}
     for task in tasks:
         scraper = search_engines[task.engine]
-        results = scraper.get_search_results(query, max_pages=25)
+        results = scraper.get_search_results(query, max_pages=MAX_PAGE_SCRAPE)
         unique_urls = set()
         for result in results:
             title = result["title"]
@@ -104,6 +107,10 @@ def run_se_scrape_tasks(query: str, query_hash: str, refresh: bool, tasks: list[
             if url not in unique_urls:
                 unique_urls.add(url)
                 is_dupe = False
+
+            # if the url is already in all_unique_urls, then this is dupe accross search engines
+            if url in all_unique_urls:
+                is_dupe = True
 
             se_scrape_result = SeScrapeResult(
                 se_scrape_task_id=task.id,
@@ -223,3 +230,57 @@ def create_search_query_stats_task(query: str, query_hash: str, refresh: bool, d
 
     db.add(search_query_stats)
     db.commit()
+
+    create_ranking(query, query_hash, refresh)
+
+
+@with_db
+def create_ranking(query: str, query_hash: str, refresh: bool, db: Session):
+    logger.info(f"[STEP 7] Creating/Updating QueryRank for: {query}")
+
+    tasks = db.query(SeScrapeTask).filter_by(query_hash=query_hash).all()
+    task_ids = [task.id for task in tasks]
+
+    subquery = db.query(
+        func.min(SeScrapeResult.id).label("min_id")
+    ).filter(
+        SeScrapeResult.se_scrape_task_id.in_(task_ids),
+        SeScrapeResult.scraped == True,
+        SeScrapeResult.url_hash.is_not(None)
+    ).group_by(SeScrapeResult.url_hash).subquery()
+
+    # Main query to get full rows, joining with subquery
+    db_query = db.query(SeScrapeResult).join(
+        subquery, SeScrapeResult.id == subquery.c.min_id
+    )
+
+    all_results = db_query.all()
+
+    items = []
+    query_keywords = db.query(QueryKeyword).filter_by(query_hash=query_hash).all()
+    for result in all_results:
+        search_term_freq = {}
+        for query_keyword in query_keywords:
+            keyword_freq = db.query(KeywordFreq).filter(
+                KeywordFreq.url_hash == result.url_hash,
+                KeywordFreq.keyword_hash == query_keyword.keyword_hash,
+            ).one()
+            search_term_freq[query_keyword.keyword] = keyword_freq.frequency
+        data = {
+            "url_hash": result.url_hash,
+            "query_hash": query_hash,
+            "search_term_freq": search_term_freq,
+            "total_matches": sum(list(search_term_freq.values())),
+        }
+        items.append(data)
+
+    items = sorted(items, key=lambda x: x["total_matches"], reverse=True)
+    for i, item in enumerate(items):
+        db.add(QueryRank(
+            query_hash=item["query_hash"],
+            url_hash=item["url_hash"],
+            rank=i,
+            total_matches=item["total_matches"],
+        ))
+    db.commit()
+    logger.info(f"[] Finished processing: {query}")

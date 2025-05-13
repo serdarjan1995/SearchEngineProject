@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "c6f2a415c981b199f1dd7514a2079c400834cd64e2936233a80bf68f2d81b399"
+            "sha256": "e084bf6474bed00f0f60e41c510a0ae6be8a0618b671f3c55d90a59c32078557"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -752,7 +752,7 @@
                 "sha256:ee461a4eaab4f165b68780a6a1af95fb23a29932be7569b9fab666c407969051",
                 "sha256:f5045039100ed58fa817a6227a356240ea1b9a1bc141018864c306c1a16d4175"
             ],
-            "markers": "python_version >= '3.10'",
+            "index": "pypi",
             "version": "==2.2.5"
         },
         "nvidia-cublas-cu12": {
@@ -1498,6 +1498,14 @@
             "markers": "python_version >= '3.8'",
             "version": "==2024.11.6"
         },
+        "requests": {
+            "hashes": [
+                "sha256:55365417734eb18255590a9ff9eb97e9e1da868d4ccd6402399eaf68af20a760",
+                "sha256:70761cfe03c773ceb22aa2f671b4757976145175cdfca038c02654d061d6dcc6"
+            ],
+            "index": "pypi",
+            "version": "==2.32.3"
+        },
         "scikit-image": {
             "hashes": [
                 "sha256:24cc986e1f4187a12aa319f777b36008764e856e5013666a4a83f8df083c2641",
@@ -1839,6 +1847,14 @@
             ],
             "markers": "python_version >= '3.9'",
             "version": "==0.4.0"
+        },
+        "urllib3": {
+            "hashes": [
+                "sha256:414bc6535b787febd7567804cc015fee39daab8ad86268f1310a9250697de466",
+                "sha256:4e16665048960a0900c702d4a66415956a584919c03361cac9f1df5c5dd7e813"
+            ],
+            "markers": "python_version >= '3.9'",
+            "version": "==2.4.0"
         },
         "uvicorn": {
             "hashes": [

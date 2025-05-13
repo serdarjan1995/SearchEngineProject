@@ -2,9 +2,9 @@ import hashlib
 import logging
 import os
 import nltk
-from backend import scrapers
+import scrapers
 from datetime import datetime, timezone
-from backend.settings import BASE_DIR
+from settings import BASE_DIR
 
 nltk.data.path.append(os.path.join(BASE_DIR, "static_data/nltk_data"))
 

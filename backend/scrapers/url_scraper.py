@@ -88,6 +88,8 @@ class URLScrapeProcessor:
                 "Accept-Language": "en-US,en;q=0.9",
             }
             response = requests.get(url, headers=headers, timeout=20, verify=False)
+            if not response.ok:
+                return {'url': url, 'success': False, 'info_type': 'html', 'text': ''}
             mime = self.get_mimetype(url, response)
 
             if mime is None:

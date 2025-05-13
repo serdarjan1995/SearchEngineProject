@@ -15,6 +15,8 @@ services:
     volumes:
       - mysql-data:/var/lib/mysql
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - app-network
 
 #  mysql-workbench:
 #    image: linuxserver/mysql-workbench
@@ -28,34 +30,47 @@ services:
 #      - ./config/mysql-workbench:/config
 #    restart: unless-stopped
 
-#  backend:
-#    build:
-#      context: .
-#      dockerfile: backend.Dockerfile
-#    depends_on:
-#      - db
-#    env_file: .env
+  backend:
+    build:
+      context: .
+      dockerfile: backend.Dockerfile
+    depends_on:
+      - db
+    env_file: .env
+    environment:
+      DATABASE_URL: mysql+pymysql://${MYSQL_USER}:${MYSQL_PASSWORD}@db:3306/${MYSQL_DATABASE}
+      MYSQL_HOST: db
+      MYSQL_PORT: 3306
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    networks:
+      - app-network
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend.Dockerfile
+    command: "npm run dev"
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    stdin_open: true
 #    environment:
-#      DATABASE_URL: mysql+pymysql://${MYSQL_USER}:${MYSQL_PASSWORD}@db:3306/${MYSQL_DATABASE}
-#    ports:
-#      - "8000:8000"
-#    volumes:
-#      - ./backend:/app
-#    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
-#
-#  frontend:
-#    build:
-#      context: .
-#      dockerfile: frontend.Dockerfile
-#    ports:
-#      - "3000:3000"
-#    volumes:
-#      - ./frontend:/app
-#      - /app/node_modules
-#    stdin_open: true
-#    tty: true
-#    depends_on:
-#      - backend
+#      - VITE_BACKEND_URL=http://backend:8000
+    tty: true
+    depends_on:
+      - backend
+    networks:
+      - app-network
 
 volumes:
   mysql-data:
+
+networks:
+  app-network:
+    driver: bridge

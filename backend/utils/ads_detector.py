@@ -1,7 +1,6 @@
 from adblockparser import AdblockRules
 from urllib.parse import urlparse, parse_qs
-from backend import settings
-import pandas as pd
+import settings
 
 # load raw rules
 with open(settings.EASY_LIST_PATH, encoding="utf-8") as f:
@@ -51,15 +50,3 @@ def is_promo_heuristic(url):
     if PROMO_QUERY_PARAMS & set(query_params.keys()):
         return True
     return False
-
-
-def tag_ads_and_duplicates(df: pd.DataFrame, url_column: str = "url") -> pd.DataFrame:
-    # Apply ad detection
-    df = df.copy()
-    df['is_ad'] = df[url_column].apply(is_ad_url)
-    df['is_promo'] = df[url_column].apply(is_promo_heuristic)
-
-    # Detect duplicates
-    df['is_duplicate'] = df.duplicated(subset=url_column, keep=False)
-
-    return df
