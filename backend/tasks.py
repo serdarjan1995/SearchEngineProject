@@ -11,7 +11,7 @@ from models import SearchQuery, QueryKeyword, SeScrapeTask, SeScrapeResult, UrlS
 from utils.base_utils import logger, md5_hash, datetime_now, split_query_to_keywords, search_engines
 
 
-MAX_PAGE_SCRAPE = 10
+MAX_PAGE_SCRAPE = 25
 
 
 @with_db
