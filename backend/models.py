@@ -37,6 +37,7 @@ class SearchQueryStats(Base):
     query_hash = Column(String(255), ForeignKey("search_queries.query_hash"))  # No FK, but join is done manually
     unique_urls = Column(Integer)
     total_urls = Column(Integer)
+    unscraped_urls = Column(Integer)
     ad_urls = Column(Integer)
     promo_urls = Column(Integer)
     dupe_urls = Column(Integer)

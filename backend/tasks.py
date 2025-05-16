@@ -212,8 +212,16 @@ def create_search_query_stats_task(query: str, query_hash: str, refresh: bool, d
         func.count(case((SeScrapeResult.is_promo == True, 1))).label("promo_count"),
         func.count(case((SeScrapeResult.is_dupe == True, 1))).label("dupe_count"),
     ).filter(
-        SeScrapeResult.se_scrape_task_id.in_(task_ids)
+        SeScrapeResult.se_scrape_task_id.in_(task_ids),
+        SeScrapeResult.scraped == True,
     ).one()
+
+    unscraped_urls = db.query(
+        func.count(distinct(SeScrapeResult.url_hash))
+    ).filter(
+        SeScrapeResult.se_scrape_task_id.in_(task_ids),
+        SeScrapeResult.scraped == False,
+    ).scalar()
 
     total_urls = db.query(func.count()).filter(
         SeScrapeResult.se_scrape_task_id.in_(task_ids)
@@ -223,6 +231,7 @@ def create_search_query_stats_task(query: str, query_hash: str, refresh: bool, d
         query_hash=query_hash,
         unique_urls=result.distinct_urls,
         total_urls=total_urls,
+        unscraped_urls=unscraped_urls,
         ad_urls=result.ad_count,
         promo_urls=result.promo_count,
         dupe_urls=result.dupe_count,

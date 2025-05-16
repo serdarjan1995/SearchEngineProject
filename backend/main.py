@@ -34,6 +34,7 @@ def index():
 @app.get("/search")
 def search(q: str = Query(..., min_length=1), p: int = Query(1, ge=1), ps: int = Query(10, ge=1, le=100),
            background_tasks: BackgroundTasks = None, db: Session = Depends(get_db)):
+    q = " ".join([w.lower() for w in q.split(" ") if w])
     query_hash = md5_hash(q)
 
     offset = (p - 1) * ps
@@ -111,6 +112,7 @@ def search(q: str = Query(..., min_length=1), p: int = Query(1, ge=1), ps: int =
             "desc": url_scraper_result.text_content[:250] + " ...",
             "info_type": url_scraper_result.info_type,
             "search_term_freq": search_term_freq,
+            "total_search_term_freq": sum(search_term_freq.values()),
         }
         result_data.append(data)
 
@@ -122,6 +124,7 @@ def search(q: str = Query(..., min_length=1), p: int = Query(1, ge=1), ps: int =
             "ad_urls": query_stats.ad_urls,
             "promo_urls": query_stats.promo_urls,
             "dupe_urls": query_stats.dupe_urls,
+            "unscraped_urls": query_stats.unscraped_urls,
         },
         "total_results": total_results,
         "results": result_data

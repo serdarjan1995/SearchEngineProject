@@ -27,6 +27,9 @@ function Results({ results, stats }) {
                 <Grid item xs={6} sm={3}>
                   <Typography variant="body2" sx={styles.statsText}>📛 Promo URLs: {stats.promo_urls}</Typography>
                 </Grid>
+                <Grid item xs={6} sm={3}>
+                  <Typography variant="body2" sx={styles.statsText}>📛 Unscraped URLs: {stats.unscraped_urls}</Typography>
+                </Grid>
               </Grid>
             </Box>
         )}
@@ -41,14 +44,14 @@ function Results({ results, stats }) {
                     <CardContent>
                       <CardActionArea component="a" href={result.url} target="_blank">
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Typography variant="h6" sx={styles.title}>
-                          {result.title}
+                        <Typography variant="h6" sx={styles.title} dangerouslySetInnerHTML={{ __html: result.title }}>
                         </Typography>
                         <Tooltip
                             title={
                               <Box>
                                 <Typography variant="body2"><strong>URL Hash:</strong> {result.url_hash}</Typography>
                                 <Typography variant="body2"><strong>Term Frequency:</strong></Typography>
+                                <Typography variant="body2">Total: {result.total_search_term_freq} </Typography>
                                 <ul style={{ margin: 0, paddingLeft: '1em' }}>
                                   {Object.entries(result.search_term_freq).map(([term, freq]) => (
                                       <li key={term}>

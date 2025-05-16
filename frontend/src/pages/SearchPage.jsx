@@ -82,6 +82,7 @@ function SearchPage() {
                                     <span>✨ Unique: {stats.unique_urls}</span>
                                     <span>⛔️ Ads: {stats.ad_urls}</span>
                                     <span>📛 Promos: {stats.promo_urls}</span>
+                                    <span>❌ Unscraped: {stats.unscraped_urls}</span>
                                 </div>
                             )}
                         </div>
